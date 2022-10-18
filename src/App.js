@@ -1,24 +1,68 @@
-import logo from './logo.svg';
-import './App.css';
+import "./App.css";
+import DiscussionsList from "./components/DiscussionsList";
+import { useState, useEffect, useCallback } from "react";
+import SubmitComponent from "./components/SubmitComponent";
+import PageList from "./components/PageList";
 
 function App() {
+  const [discussion, setDiscussion] = useState([]);
+  const [articleTimes, setArticleTimes] = useState(10);
+  const [renderArticle, serRenderArticle] = useState(1);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const data = await fetch("http://localhost:4000/discussions/").then(
+          (data) => data.json()
+        );
+        setDiscussion(data);
+      } catch (e) {
+        console.log(e);
+      }
+    };
+    fetchData();
+  }, []);
+  const onDiscusstion = useCallback(
+    (data) => {
+      setDiscussion(data.concat(discussion));
+    },
+    [discussion]
+  );
+  const deleteDiscussion = useCallback(
+    (id) => {
+      console.log("deleteDiscussion");
+      const newDiscussion = discussion.filter((ele) => ele.id !== id);
+      setDiscussion(newDiscussion);
+    },
+    [discussion]
+  );
+  const renderArticleFunc = useCallback((id) => {
+    serRenderArticle(id);
+  }, []);
+  const articleTimesFunc = useCallback((value) => {
+    setArticleTimes(value);
+  }, []);
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <main>
+      <h1>My Agora States</h1>
+      <SubmitComponent
+        onDiscusstion={onDiscusstion}
+        discussion={discussion}
+        articleTimesFunc={articleTimesFunc}
+      />
+      <DiscussionsList
+        discussion={discussion}
+        deleteDiscussion={deleteDiscussion}
+        renderArticle={renderArticle}
+        articleTimes={articleTimes}
+      />
+      <PageList
+        discussion={discussion}
+        renderArticleFunc={renderArticleFunc}
+        articleTimes={articleTimes}
+      />
+    </main>
   );
 }
 
